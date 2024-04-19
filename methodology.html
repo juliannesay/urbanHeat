@@ -196,24 +196,24 @@
           <div class="welcome-banner">
             <h2>Methodology: Data Processing and Spatial Analysis for UHI Mapping</h2>
             <p>
-                The foundation of our Urban Heat Island analysis rests on a systematic approach, beginning with the delineation of Metropolitan Statistical Areas (MSAs) based on census data. Within these MSAs, we generated 500 random geospatial points to anchor our temperature data, which we sourced as monthly averages for July from the PRISM climate database, pinpointing the peak of urban summer heat.
+                The analysis of Urban Heat Islands (UHIs) utilized a structured methodology, starting with the definition of Metropolitan Statistical Areas (MSAs) based on census data. Within these rapidly growing urban areas, 500 random geospatial points were generated to capture temperature variations, acquiring monthly averages for July—historically the warmest month—from the PRISM climate database.
             </p>
             <p>
-                This project utilized Python's powerful data manipulation capabilities to process the raw temperature data. Initially, a Python script was employed to parse CSV files and format them into an organized structure. The script filtered the data by date and managed Excel file outputs for each city and year, using the pandas library for efficient data handling. This step was crucial for establishing a clean dataset to be used in subsequent spatial analyses.
+                Raw climate data were first processed using a <a href="https://github.com/juliannesay/urbanHeat/blob/main/python/prismcleanup.py" target="_blank">Python script for raw data cleanup</a>, which organized the large datasets into a manageable format. This script utilized pandas, a powerful data manipulation library, allowing for systematic management and transformation of the data.
             </p>
             <p>
-                The next phase involved converting these structured data points into spatially-referenced points using arcpy, a Python module for ArcGIS. This conversion was a key transition from tabular data to a geospatial format, allowing for the implementation of spatial operations like kriging—an advanced interpolation technique used to predict temperatures across the urban terrain.
+                Subsequently, the tabular data were converted into point features using Python's arcpy module, as documented in the <a href="https://github.com/juliannesay/urbanHeat/blob/main/python/tabletopoint.py" target="_blank">script for converting tables to point data</a>. This conversion was critical, marking the transition from tables to a spatial dataset and setting the stage for geostatistical analysis.
             </p>
             <p>
-                The kriging process was automated through another Python script. By defining parameters such as kriging models, cell size, and search radius within the script, we could generate temperature surfaces for each set of data points, providing a detailed visualization of the UHI effect over time.
+                Kriging analysis was then implemented through a <a href="https://github.com/juliannesay/urbanHeat/blob/main/python/kriging.py" target="_blank">Python script</a> to create predictive temperature surfaces. This interpolation technique was tailored via the script to accommodate specific model parameters, enabling visualization and examination of the UHI effect over a continuous spatial field.
             </p>
             <p>
-                Highlighting developing cities is a deliberate choice in our methodology. These areas, often experiencing swift changes, are at a critical juncture where the UHI effect can rapidly intensify. Monitoring and mapping these changes are essential for crafting urban planning strategies that mitigate heat impacts.
+                The focus on developing cities, susceptible to rapid UHI intensification, was a strategic choice. Monitoring the UHI effect as these cities expanded was vital for proactive urban planning and environmental management.
             </p>
             <p>
-                The final integration of these datasets into an interactive web application was accomplished through web development technologies—HTML for structure, CSS for styling, and JavaScript for functionality. The application offers users an intuitive way to explore and understand the progression and impact of urban heat islands, providing valuable insights into urban climate dynamics.
+                This methodology culminated in the development of an interactive web application. Combining HTML, CSS, and JavaScript, the application presents the data through dynamic maps and graphs, offering an engaging platform for users to investigate urban temperature trends and their implications for future city development.
             </p>
-          </div>        
+        </div>          
           </div>
          
         
