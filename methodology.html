@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+    <meta content="initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <title>Urban Heat Explorer</title>
+    <link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..1000&family=Madimi+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Base styles */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'DM Sans', sans-serif;
+        background: #F2FDFF; 
+        color: #101935; 
+      }
+
+      .container {
+        display: grid; 
+        grid-template-columns: 100%; 
+        grid-template-rows: 10% auto min-content; 
+        height: 100vh; 
+        gap: 0% 0px; 
+        grid-template-areas: 
+          "header"
+          "welcome-banner";
+            } 
+
+      /* Header styling with gradient */
+      .header {
+        grid-area: header;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        background: linear-gradient(to right, #618985, #96BBBB);
+        color: #edf1f7; 
+      }
+
+      .header h1 {
+        font-family: 'Madimi One', sans-serif;
+        font-size: 30px;
+        color: #edf1f7;
+        text-shadow: 2px 2px 4px #101935;
+      }
+
+
+      .header nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+      }
+
+      .header nav ul li a {
+        text-decoration: none;
+        font-size: 18px;
+        color: #edf1f7; 
+      }
+
+      .header nav ul li a:hover {
+        background-color: #9AD4D6; 
+        border-radius: 5px; 
+        padding: 5px 10px; 
+      }
+
+      .button {
+        margin: 0 5px;
+        padding: 10px 20px;
+        background-color: #16302B; 
+        color: #edf1f7; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background-color: #363732; 
+      }
+
+      
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #16302B;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+      }
+
+      /* Style for the dropdown items */
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+
+      /* Show the dropdown content on hover */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* Hide the dropdown content when not hovering over the dropdown */
+      .dropdown:not(:hover) .dropdown-content {
+        display: none;
+      }
+
+      .welcome-banner {
+        text-align: center; 
+        padding: 40px 20px; 
+        background-color: #96BBBB; 
+        color: #edf1f7;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        grid-area: welcome-banner; 
+      }
+
+      .welcome-banner h2 {
+        font-family: 'Madimi One', sans-serif;
+        font-size: 48px; 
+        margin: 0 0 30px 0; 
+        line-height: 1.3; 
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+      }
+
+      .welcome-banner p {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 20px;
+        margin: 0 0 20px 0; 
+        line-height: 1.6; 
+        text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+        color: #edf1f7; 
+        max-width: 800px; 
+        margin-left: auto; 
+        margin-right: auto; 
+      }
+
+      </style>      
+
+<!--importing thr css and libraries for esri.js-->
+<link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+<script src="https://js.arcgis.com/4.27/">
+</script>
+<!--loading the modules-->
+
+</script>
+<script>
+
+  </script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Urban Heat Explorer</h1>
+            <nav>
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="uhi.html">About UHI</a></li>
+                <!-- Dropdown for cities -->
+                <li class="dropdown">
+                  <a href="#">Research Triangle</a>
+                  <ul class="dropdown-content">
+                    <li><a href="raleightime.html">Time View</a></li>
+                    <li><a href="raleighswipe.html">Swipe View</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Austin</a>
+                  <ul class="dropdown-content">
+                    <li><a href="austintime.html">Time View</a></li>
+                    <li><a href="austinswipe.html">Swipe View</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Richmond</a>
+                  <ul class="dropdown-content">
+                    <li><a href="richmondtime.html">Time View</a></li>
+                    <li><a href="richmondswipe.html">Swipe View</a></li>
+                  </ul>
+                </li>
+                <li><a href="methodology.html">Methodology</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="welcome-banner">
+            <h2>Methodology: Data Processing and Spatial Analysis for UHI Mapping</h2>
+            <p>
+                The foundation of our Urban Heat Island analysis rests on a systematic approach, beginning with the delineation of Metropolitan Statistical Areas (MSAs) based on census data. Within these MSAs, we generated 500 random geospatial points to anchor our temperature data, which we sourced as monthly averages for July from the PRISM climate database, pinpointing the peak of urban summer heat.
+            </p>
+            <p>
+                This project utilized Python's powerful data manipulation capabilities to process the raw temperature data. Initially, a Python script was employed to parse CSV files and format them into an organized structure. The script filtered the data by date and managed Excel file outputs for each city and year, using the pandas library for efficient data handling. This step was crucial for establishing a clean dataset to be used in subsequent spatial analyses.
+            </p>
+            <p>
+                The next phase involved converting these structured data points into spatially-referenced points using arcpy, a Python module for ArcGIS. This conversion was a key transition from tabular data to a geospatial format, allowing for the implementation of spatial operations like kriging—an advanced interpolation technique used to predict temperatures across the urban terrain.
+            </p>
+            <p>
+                The kriging process was automated through another Python script. By defining parameters such as kriging models, cell size, and search radius within the script, we could generate temperature surfaces for each set of data points, providing a detailed visualization of the UHI effect over time.
+            </p>
+            <p>
+                Highlighting developing cities is a deliberate choice in our methodology. These areas, often experiencing swift changes, are at a critical juncture where the UHI effect can rapidly intensify. Monitoring and mapping these changes are essential for crafting urban planning strategies that mitigate heat impacts.
+            </p>
+            <p>
+                The final integration of these datasets into an interactive web application was accomplished through web development technologies—HTML for structure, CSS for styling, and JavaScript for functionality. The application offers users an intuitive way to explore and understand the progression and impact of urban heat islands, providing valuable insights into urban climate dynamics.
+            </p>
+          </div>        
+          </div>
+         
+        
+</script><script>
+</script></body>
+<script>
+  </script>
+  
+  
+</html>

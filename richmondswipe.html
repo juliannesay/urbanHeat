@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+    <meta content="initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <title>Urban Heat Explorer</title>
+    <link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..1000&family=Madimi+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Base styles */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'DM Sans', sans-serif;
+        background: #F2FDFF; 
+        color: #101935; 
+      }
+
+      /* grid in container */
+      .container {
+        display: grid;
+        grid-template-columns: 33% 33% 34%;
+        grid-template-rows: 10% auto min-content; 
+        height: 100vh;
+        gap: 0% 0%;
+        grid-template-areas:
+          "header header header"
+          "map map graph"
+          "map map blurb";
+      }
+
+
+      .map {
+        grid-area: map;
+        min-height: 500px;
+      }
+
+      /* Header styling with gradient */
+      .header {
+        grid-area: header;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        background: linear-gradient(to right, #618985, #96BBBB);
+        color: #edf1f7; 
+      }
+
+      .header h1 {
+        font-family: 'Madimi One', sans-serif;
+        font-size: 30px;
+        color: #edf1f7;
+        text-shadow: 2px 2px 4px #101935; 
+      }
+
+
+      .header nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+      }
+
+      .header nav ul li a {
+        text-decoration: none;
+        font-size: 18px;
+        color: #edf1f7; 
+      }
+
+      .header nav ul li a:hover {
+        background-color: #9AD4D6; 
+        border-radius: 5px;
+        padding: 5px 10px; 
+      }
+
+
+      /* Graph area */
+      .graph {
+        grid-area: graph;
+      }
+
+      /* Blurb styling */
+      .blurb {
+        grid-area: blurb;
+        padding: 20px;
+        background: #96BBBB; 
+        color: #edf1f7;
+      }
+
+      .blurb-content {
+        margin-bottom: 20px;
+      }
+
+      /* buttons to change view */
+      .view-toggle {
+        text-align: center;
+      }
+
+      .view-toggle button {
+        margin: 0 5px;
+        padding: 10px 20px;
+        background-color: #16302B; 
+        color: #edf1f7; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .view-toggle button:hover {
+        background-color: #363732; 
+      }
+
+      /* Floating panel for dropdown */
+      .floating-panel {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background-color: rgba(150, 187, 187, 0.8); 
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+    }
+
+    .floating-panel select, .floating-panel button {
+        margin: 5px;
+        padding: 8px;
+        width: auto;
+    }
+
+    .floating-panel button {
+        background-color: #16302B;
+        color: #edf1f7;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .floating-panel button:hover {
+        background-color: #364732;
+    }
+
+    /* Hide the dropdown content by default */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #16302B;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    /* Style for the dropdown items */
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* Show the dropdown content on hover */
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Hide the dropdown content when not hovering over the dropdown */
+    .dropdown:not(:hover) .dropdown-content {
+      display: none;
+    }
+
+    /* Information button */
+    .info-button {
+        cursor: pointer;
+        background-color: #16302B; 
+        border: none;
+        color: #edf1f7; 
+        padding: 5px 10px;
+        font-size: 16px;
+        border-radius: 50%; 
+        float: right;
+        margin-left: 10px;
+        transition: background-color 0.3s; 
+    }
+
+    .info-button:hover {
+        background-color: #364732; 
+    }
+
+    /* Modal/popup for info button */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%; 
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+      </style>      
+
+<!--importing thr css and libraries for esri.js-->
+<link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+<script src="https://js.arcgis.com/4.27/">
+</script>
+<!--loading the modules-->
+
+
+<script>
+  //globally declare certain variables
+  var map, view;
+  var swipeWidget = null;
+  var allLayers;
+
+  //error checking
+  console.log("Before require block");
+
+  //initialize/import from esri API
+  require([
+    "esri/config", 
+    "esri/Map", 
+    "esri/views/MapView", 
+    "esri/widgets/Locate", 
+    "esri/widgets/Search",
+    "esri/layers/TileLayer",
+    "esri/layers/FeatureLayer", 
+    "esri/widgets/Legend", 
+    "esri/widgets/Expand", 
+    "esri/widgets/Swipe"
+  ], (esriConfig, Map, MapView, Locate, Search, TileLayer, FeatureLayer, Legend, Expand, Swipe) => { 
+    console.log("Inside require callback");
+    esriConfig.apiKey = "AAPK50bd33a7f78c4bd98439817346c45150YxOaoF_yiyzXk7-A7yCiGXxGKE8ywmKK9LJdIaiT30z5N5ry4n9ghqL74FTTcDK7";
+
+    //create map and map view
+    map = new Map({
+      basemap: "satellite"
+    });
+
+    view = new MapView({
+      container: "viewDiv",  
+      map: map,
+      center: [-77.4417, 37.3568],  
+      zoom: 9
+    });
+
+    SwipeWidget = Swipe; // Assign Swipe to a global variable before any layers are called
+
+    //the following blocks of code load layers
+    const layer75 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_1975/MapServer",
+      id: "layer75",
+      visible: false
+    });
+
+    const layer80 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_1980/MapServer",
+      id: "layer80",
+      visible: false
+    });
+
+    const layer85 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_1985/MapServer",
+      id: "layer85",
+      visible: false
+    });
+
+    const layer90 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_1990/MapServer",
+      id: "layer90",
+      visible: false
+    });
+
+    const layer95 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_1995/MapServer",
+      id: "layer95",
+      visible: false
+    });
+
+    const layer00 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_2000/MapServer",
+      id: "layer00",
+      visible: false
+    });
+
+    const layer05 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_2005/MapServer",
+      id: "layer05",
+      visible: false
+    });
+
+    const layer10 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_2010/MapServer",
+      id: "layer10",
+      visible: false
+    });
+
+    const layer15 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_2015/MapServer",
+      id: "layer15",
+      visible: false
+    });
+
+    const layer20 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Area_2020/MapServer",
+      id: "layer20",
+      visible: false
+    });
+
+    allLayers = [layer75, layer80, layer85, layer90, layer95, layer00, layer05, layer10, layer15, layer20];
+    console.log("allLayers set: ", allLayers);
+    map.addMany(allLayers);
+
+    // Define the cities feature layer
+    const citiesLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Richmond_Cities/FeatureServer",
+                id: "cityLayerId",
+                visible: true
+            });
+
+    // Add the cities layer to the map on the top
+            map.add(citiesLayer, 99);
+
+      //create search widget
+    const searchWidget = new Search({
+      view: view,
+    });
+
+    view.ui.add(searchWidget, {
+      position: "top-right",
+    });
+
+    //add locate button
+    const locateBtn = new Locate({
+      view: view
+    });
+
+    view.ui.add(locateBtn, {
+      position: "top-right"
+    });
+
+    //create legend in an expand widget
+    const legend = new Legend({
+      view: view,
+      style: "card"
+    });
+
+    const legendExpand = new Expand({
+      view: view,
+      content: legend,
+      expandIconClass: "esri-icon-layer-list",
+      group: "top-right"
+    });
+
+    view.ui.add(legendExpand, "top-right");
+  }); 
+
+  //the following lines of code create and update the swipe widget
+  function updateSwipeWidget(leftLayer, rightLayer) {
+    if (!swipeWidget) {
+        // Create the Swipe widget initally
+        swipeWidget = new SwipeWidget({
+            view: view,                  
+            leadingLayers: [leftLayer],  
+            trailingLayers: [rightLayer],
+            position: 50                 
+        });
+        view.ui.add(swipeWidget);        // Add the swipe widget to the UI
+    } else {
+        // Update the existing swipe widget with new layers
+        swipeWidget.leadingLayers = [leftLayer];
+        swipeWidget.trailingLayers = [rightLayer];
+    }
+}
+
+  function setupSwipe() {
+    console.log("Setup Swipe called");
+    var leftLayerId = document.getElementById('leftLayerSelect').value;
+    var rightLayerId = document.getElementById('rightLayerSelect').value;
+
+    var leftLayer = map.findLayerById(leftLayerId);
+    var rightLayer = map.findLayerById(rightLayerId);
+    var cityLayer = map.findLayerById('cityLayerId');
+
+    if (!leftLayer || !rightLayer) {
+        console.error("Layers not found:", leftLayerId, rightLayerId, 'cityLayerId');
+        return;
+    }
+
+    // Set all layers to not visible
+    allLayers.forEach(layer => layer.visible = false);
+    console.log("allLayers accessed: ", allLayers); //error handling to ensure layers are being called correctly
+
+    // Only the selected year layers are made visible
+    leftLayer.visible = true;
+    rightLayer.visible = true;
+    cityLayer.visible = true;
+
+    // Update swipe widget as necessary
+    updateSwipeWidget(leftLayer, rightLayer);
+}
+
+
+</script>
+
+
+
+</head>
+<body>
+    <div class="container">
+      <div id="viewDiv" class="map">
+        <!-- Floating panel for layer controls -->
+        <div class="floating-panel">
+            <select id="leftLayerSelect">
+                <option value="layer75">1975</option>
+                <option value="layer80">1980</option>
+                <option value="layer85">1985</option>
+                <option value="layer90">1990</option>
+                <option value="layer95">1995</option>
+                <option value="layer00">2000</option>
+                <option value="layer05">2005</option>
+                <option value="layer10">2010</option>
+                <option value="layer15">2015</option>
+                <option value="layer20">2020</option>
+            </select>
+            <select id="rightLayerSelect">
+                <option value="layer75">1975</option>
+                <option value="layer80">1980</option>
+                <option value="layer85">1985</option>
+                <option value="layer90">1990</option>
+                <option value="layer95">1995</option>
+                <option value="layer00">2000</option>
+                <option value="layer05">2005</option>
+                <option value="layer10">2010</option>
+                <option value="layer15">2015</option>
+                <option value="layer20">2020</option>
+            </select>
+            <button onclick="setupSwipe()">Compare</button>
+        </div>
+    </div>    
+        <div class="header">
+            <h1>Urban Heat Explorer</h1>
+            <nav>
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="uhi.html">About UHI</a></li>
+                <!-- Dropdown for cities in menu -->
+                <li class="dropdown">
+                  <a href="#">Research Triangle</a>
+                  <ul class="dropdown-content">
+                    <li><a href="raleightime.html">Timeline</a></li>
+                    <li><a href="raleighswipe.html">Compare</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Austin</a>
+                  <ul class="dropdown-content">
+                    <li><a href="austintime.html">Timeline</a></li>
+                    <li><a href="austinswipe.html">Compare</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Richmond</a>
+                  <ul class="dropdown-content">
+                    <li><a href="richmondtime.html">Timeline</a></li>
+                    <li><a href="richmondswipe.html">Compare</a></li>
+                  </ul>
+                </li>
+                <li><a href="summary.html">Summary</a></li>
+              </ul>
+            </nav>
+        </div>
+        <div class="graph">
+          <canvas id="temperatureChart"></canvas>
+        </div>
+        <div class="blurb">
+          <div class="blurb-content">
+            <h2> <button id="infoButton" class="info-button">i</button>Exploring Urban Heat in Greater Richmond</h2>
+            <p>Discover the impact of urban development on heat trends in Greater Richmond from 1975 to 2020. This interactive tool allows you to visualize the increase in urban heat islands as the city has expanded over the years.</p>
+            <p><strong>How to Use:</strong> Click 'Timeline' to explore changes year-by-year with a time slider, or select 'Compare' to compare two specific years side-by-side.</p>
+            <div class="view-toggle">
+              <button id="timeViewButton">Timeline</button>
+              <button id="swipeViewButton">Compare</button>
+               <!--<button id="timeLapseButton">Timelapse</button> -->
+            </div>
+        </div>
+          <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Welcome to Greater Richmond!</h2>
+<p>Greater Richmond, known as the Richmond metropolitan area, serves as a vibrant cultural and economic hub in Virginia. This region includes the historic city of Richmond, one of the oldest cities in the United States, renowned for its significant role in American history and as a pivotal center of the tobacco industry.</p>
+<h3>Counties and Independent Cities Comprising Greater Richmond:</h3>
+<ul>
+  <li><strong>Amelia County:</strong> Celebrated for its pastoral and serene landscapes.</li>
+  <li><strong>Charles City County:</strong> A place of deep historical roots and rural charm.</li>
+  <li><strong>Chesterfield County:</strong> Notable for its economic growth and natural beauty.</li>
+  <li><strong>Dinwiddie County:</strong> Known for its historical landmarks and quiet countryside.</li>
+  <li><strong>Goochland County:</strong> Characterized by its historic estates and agricultural vitality.</li>
+  <li><strong>Hanover County:</strong> Offers a mix of history and modern suburban development.</li>
+  <li><strong>Henrico County:</strong> A key player in the region's economic and cultural activities.</li>
+  <li><strong>King and Queen County:</strong> Dominated by forested areas and traditional farming.</li>
+  <li><strong>King William County:</strong> Known for its cultural heritage and natural settings.</li>
+  <li><strong>New Kent County:</strong> Blends history with growing residential communities.</li>
+  <li><strong>Powhatan County:</strong> Features expansive landscapes and a tranquil environment.</li>
+  <li><strong>Prince George County:</strong> A balance of historical significance and modern industry.</li>
+  <li><strong>Sussex County:</strong> Maintains a strong agricultural tradition.</li>
+  <li><strong>City of Colonial Heights:</strong> Known for its independence and community-focused atmosphere.</li>
+  <li><strong>City of Petersburg:</strong> Rich in history and architectural heritage.</li>
+  <li><strong>City of Hopewell:</strong> Important for its industrial contributions to the region.</li>
+  <li><strong>City of Richmond:</strong> Acts as the heart of the metro area with its diverse cultural, historical, and economic influences, continuing to be a central figure in the tobacco industry and broader economic activities.</li>
+</ul>
+<p>In Virginia, both counties and independent cities operate as distinct governmental entities, although they function similarly. Greater Richmond, with its rich historical backdrop and ongoing industrial activities, offers a compelling blend of old and new, making it an attractive area for both visitors and residents alike.</p>
+</div>
+  </div>
+</div>
+</div>
+</div>
+    
+</script><script>
+</script></body>
+<script>
+  //the following lines of code will create and update the bar chart in the graph grid
+  document.addEventListener('DOMContentLoaded', function () {
+    Chart.defaults.font.family = 'DM Sans'; // Default font for all charts
+    var ctx = document.getElementById('temperatureChart').getContext('2d');
+    var temperatureChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Lowest Mean Temp (°F)', 'Overall Mean Temp (°F)', 'Highest Mean Temp (°F)'],
+            datasets: [{
+                    label: 'Year 1',
+                    backgroundColor: '#618985',
+                    data: []
+                },
+                {
+                    label: 'Year 2',
+                    backgroundColor: '#96BBBB',
+                    data: []
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    
+                }
+            },
+            responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Monthly Average Temperatures for July', 
+                font: {
+                    size: 20
+                }
+            },
+            legend: {
+                position: 'top' 
+            }
+        }
+    }
+});
+
+    // data for graph
+    var yearlyData = [
+        { year: 1975, min: 74.30, mean: 75.46, max: 76.73 },
+        { year: 1980, min: 77.59, mean: 79.14, max: 81.39 },
+        { year: 1985, min: 74.90, mean: 76.29, max: 78.09 },
+        { year: 1990, min: 77.10, mean: 78.82, max: 80.19 },
+        { year: 1995, min: 77.39, mean: 79.11, max: 81.57 },
+        { year: 2000, min: 72.30, mean: 74.71, max: 77.19 },
+        { year: 2005, min: 78.08, mean: 80.25, max: 82.85 },
+        { year: 2010, min: 78.60, mean: 81.17, max: 83.75 },
+        { year: 2015, min: 75.40, mean: 77.69, max: 79.88 },
+        { year: 2020, min: 79.70, mean: 81.63, max: 82.82 }
+    ];
+
+    function getFullYear(abbreviatedYear) {
+        abbreviatedYear = abbreviatedYear.substring(5); 
+        var year = parseInt(abbreviatedYear, 10);
+        return year <= 20 ? 2000 + year : 1900 + year;
+    }
+
+    function updateChartData(leftYear, rightYear) {
+        leftYear = getFullYear(leftYear);
+        rightYear = getFullYear(rightYear);
+
+        var year1Data = yearlyData.find(y => y.year === leftYear);
+        var year2Data = yearlyData.find(y => y.year === rightYear);
+
+        if (!year1Data || !year2Data) {
+            console.error('Data for selected years not found:', leftYear, rightYear);
+            return;
+        }
+
+        temperatureChart.data.datasets[0].data = [year1Data.min, year1Data.mean, year1Data.max];
+        temperatureChart.data.datasets[0].label = 'Year ' + leftYear;
+        temperatureChart.data.datasets[1].data = [year2Data.min, year2Data.mean, year2Data.max];
+        temperatureChart.data.datasets[1].label = 'Year ' + rightYear;
+        temperatureChart.update();
+    }
+
+    //update the graph with the selected years in the swipe widget
+    document.getElementById('leftLayerSelect').addEventListener('change', function () {
+        updateChartData(this.value, document.getElementById('rightLayerSelect').value);
+    });
+
+    document.getElementById('rightLayerSelect').addEventListener('change', function () {
+        updateChartData(document.getElementById('leftLayerSelect').value, this.value);
+    });
+
+    // Initialize with default years upon loading
+    updateChartData(document.getElementById('leftLayerSelect').value,
+        document.getElementById('rightLayerSelect').value);
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Handle the 'Timeline' button click
+  document.getElementById('timeViewButton').addEventListener('click', function() {
+    window.location.href = 'richmondtime.html';
+  });
+
+  // Handle the 'Compare' button click
+  document.getElementById('swipeViewButton').addEventListener('click', function() {
+    window.location.href = 'richmondswipe.html';
+  });
+
+  //timelapse section can go here
+  // document.getElementById('timeLapseButton').addEventListener('click', function() {
+  //   window.location.href = 'timelapse.html'; // Update with the actual file name
+  // });
+
+});
+
+//the following lines of code will open and close the popup window
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("infoButton");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+});
+  </script>
+</html>

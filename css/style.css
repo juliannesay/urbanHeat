@@ -1,0 +1,40 @@
+/*Add CSS styles here*/
+
+.container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1.4fr;
+    grid-template-rows: 0.5fr 1fr 1fr 0.25fr;
+    gap: 0px 0px;
+    grid-template-areas:
+      "header header header header"
+      "map map map graph"
+      "map map map blurb"
+      "footer footer footer footer";
+  }
+  
+  .map { grid-area: map; }
+  .header { grid-area: header; }
+  .graph { grid-area: graph; }
+  .blurb { grid-area: blurb; }
+  .footer { grid-area: footer; }
+  
+  /* Additional styling for demonstration */
+  .header, .map, .graph, .blurb, .footer {
+    border: 1px solid black;
+    padding: 10px;
+  }
+  
+  /* Responsive behavior if needed */
+  @media (max-width: 600px) {
+    .container {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto;
+      grid-template-areas:
+        "header"
+        "map"
+        "graph"
+        "blurb"
+        "footer";
+    }
+  }
+  

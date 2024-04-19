@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="utf-8"/>
+    <meta content="initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <title>Urban Heat Explorer</title>
+    <link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..1000&family=Madimi+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Base styles */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'DM Sans', sans-serif;
+        background: #F2FDFF; 
+        color: #101935; 
+      }
+
+      /* grid in container */
+      .container {
+        display: grid;
+        grid-template-columns: 33% 33% 34%;
+        grid-template-rows: 10% auto min-content; 
+        height: 100vh;
+        gap: 0% 0%;
+        grid-template-areas:
+          "header header header"
+          "map map graph"
+          "map map blurb";
+      }
+
+
+      .map {
+        grid-area: map;
+        min-height: 500px;
+      }
+
+      /* Header styling with gradient */
+      .header {
+        grid-area: header;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        background: linear-gradient(to right, #618985, #96BBBB);
+        color: #edf1f7; 
+      }
+
+      .header h1 {
+        font-family: 'Madimi One', sans-serif;
+        font-size: 30px;
+        color: #edf1f7;
+        text-shadow: 2px 2px 4px #101935; 
+      }
+
+
+      .header nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+      }
+
+      .header nav ul li a {
+        text-decoration: none;
+        font-size: 18px;
+        color: #edf1f7; 
+      }
+
+      .header nav ul li a:hover {
+        background-color: #9AD4D6; 
+        border-radius: 5px;
+        padding: 5px 10px; 
+      }
+
+
+      /* Graph area */
+      .graph {
+        grid-area: graph;
+      }
+
+      /* Blurb styling */
+      .blurb {
+        grid-area: blurb;
+        padding: 20px;
+        background: #96BBBB; 
+        color: #edf1f7;
+      }
+
+      .blurb-content {
+        margin-bottom: 20px;
+      }
+
+      /* buttons to change view */
+      .view-toggle {
+        text-align: center;
+      }
+
+      .view-toggle button {
+        margin: 0 5px;
+        padding: 10px 20px;
+        background-color: #16302B; 
+        color: #edf1f7; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .view-toggle button:hover {
+        background-color: #363732; 
+      }
+
+      /* Floating panel for dropdown */
+      .floating-panel {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background-color: rgba(150, 187, 187, 0.8); 
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+    }
+
+    .floating-panel select, .floating-panel button {
+        margin: 5px;
+        padding: 8px;
+        width: auto;
+    }
+
+    .floating-panel button {
+        background-color: #16302B;
+        color: #edf1f7;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .floating-panel button:hover {
+        background-color: #364732;
+    }
+
+    /* Hide the dropdown content by default */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #16302B;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    /* Style for the dropdown items */
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+
+    /* Show the dropdown content on hover */
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Hide the dropdown content when not hovering over the dropdown */
+    .dropdown:not(:hover) .dropdown-content {
+      display: none;
+    }
+
+    /* Information button */
+    .info-button {
+        cursor: pointer;
+        background-color: #16302B; 
+        border: none;
+        color: #edf1f7; 
+        padding: 5px 10px;
+        font-size: 16px;
+        border-radius: 50%; 
+        float: right;
+        margin-left: 10px;
+        transition: background-color 0.3s; 
+    }
+
+    .info-button:hover {
+        background-color: #364732; 
+    }
+
+    /* Modal/popup for info button */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 50%; 
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+      </style>      
+
+<!--importing thr css and libraries for esri.js-->
+<link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+<script src="https://js.arcgis.com/4.27/">
+</script>
+<!--loading the modules-->
+
+
+<script>
+  //globally declare certain variables
+  var map, view;
+  var swipeWidget = null;
+  var allLayers;
+
+  //error handling
+  console.log("Before require block");
+
+  //initialize/import from esri API
+  require([
+    "esri/config", 
+    "esri/Map", 
+    "esri/views/MapView", 
+    "esri/widgets/Locate", 
+    "esri/widgets/Search",
+    "esri/layers/TileLayer",
+    "esri/layers/FeatureLayer", 
+    "esri/widgets/Legend", 
+    "esri/widgets/Expand", 
+    "esri/widgets/Swipe"
+  ], (esriConfig, Map, MapView, Locate, Search, TileLayer, FeatureLayer, Legend, Expand, Swipe) => { 
+    console.log("Inside require callback");
+    esriConfig.apiKey = "AAPK50bd33a7f78c4bd98439817346c45150YxOaoF_yiyzXk7-A7yCiGXxGKE8ywmKK9LJdIaiT30z5N5ry4n9ghqL74FTTcDK7";
+
+    //create map and map view
+    map = new Map({
+      basemap: "satellite"
+    });
+
+    view = new MapView({
+      container: "viewDiv",  
+      map: map,
+      center: [-77.4417, 37.3568],  
+      zoom: 9
+    });
+
+    SwipeWidget = Swipe; // Assign Swipe to a global variable before any layers are called
+
+    //the following blocks of code load layers
+    const layer75 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_1975/MapServer",
+      id: "layer75",
+      visible: false
+    });
+
+    const layer80 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_1980/MapServer",
+      id: "layer80",
+      visible: false
+    });
+
+    const layer85 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_1985/MapServer",
+      id: "layer85",
+      visible: false
+    });
+
+    const layer90 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_1990/MapServer",
+      id: "layer90",
+      visible: false
+    });
+
+    const layer95 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_1995/MapServer",
+      id: "layer95",
+      visible: false
+    });
+
+    const layer00 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_2000/MapServer",
+      id: "layer00",
+      visible: false
+    });
+
+    const layer05 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_2005/MapServer",
+      id: "layer05",
+      visible: false
+    });
+
+    const layer10 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_2010/MapServer",
+      id: "layer10",
+      visible: false
+    });
+
+    const layer15 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_2015/MapServer",
+      id: "layer15",
+      visible: false
+    });
+
+    const layer20 = new TileLayer({
+      url: "https://tiles.arcgis.com/tiles/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_2020/MapServer",
+      id: "layer20",
+      visible: false
+    });
+
+    allLayers = [layer75, layer80, layer85, layer90, layer95, layer00, layer05, layer10, layer15, layer20];
+    console.log("allLayers set: ", allLayers);
+    map.addMany(allLayers);
+
+    // Define the cities feature layer
+    const citiesLayer = new FeatureLayer({
+                url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/Greater_Austin_Cities/FeatureServer",
+                id: "cityLayerId",
+                visible: true
+            });
+
+    // Add the cities layer to the map on the top
+            map.add(citiesLayer, 99);
+
+      //create search widget
+    const searchWidget = new Search({
+      view: view,
+    });
+
+    view.ui.add(searchWidget, {
+      position: "top-right",
+    });
+
+    //add locate button
+    const locateBtn = new Locate({
+      view: view
+    });
+
+    view.ui.add(locateBtn, {
+      position: "top-right"
+    });
+
+    //create legend in an expand widget
+    const legend = new Legend({
+      view: view,
+      style: "card"
+    });
+
+    const legendExpand = new Expand({
+      view: view,
+      content: legend,
+      expandIconClass: "esri-icon-layer-list",
+      group: "top-right"
+    });
+
+    view.ui.add(legendExpand, "top-right");
+  }); 
+
+  //the following lines of code create and update the swipe widget
+  function updateSwipeWidget(leftLayer, rightLayer) {
+    if (!swipeWidget) {
+        // Create the Swipe widget initally
+        swipeWidget = new SwipeWidget({
+            view: view,                  
+            leadingLayers: [leftLayer],  
+            trailingLayers: [rightLayer],
+            position: 50                 // Sets the initial position of the swipe widget's divider to the middle of the map view
+        });
+        view.ui.add(swipeWidget);        // Add the swipe widget to the UI
+    } else {
+        // Update the existing swipe widget with new layers
+        swipeWidget.leadingLayers = [leftLayer];
+        swipeWidget.trailingLayers = [rightLayer];
+    }
+}
+
+  function setupSwipe() {
+    console.log("Setup Swipe called");
+    var leftLayerId = document.getElementById('leftLayerSelect').value;
+    var rightLayerId = document.getElementById('rightLayerSelect').value;
+
+    var leftLayer = map.findLayerById(leftLayerId);
+    var rightLayer = map.findLayerById(rightLayerId);
+    var cityLayer = map.findLayerById('cityLayerId');
+
+    if (!leftLayer || !rightLayer) {
+        console.error("Layers not found:", leftLayerId, rightLayerId, 'cityLayerId');
+        return;
+    }
+
+    // Set all layers to not visible
+    allLayers.forEach(layer => layer.visible = false);
+    console.log("allLayers accessed: ", allLayers); //error handling to ensure layers are being called correctly
+
+    // Only the selected year layers are made visible
+    leftLayer.visible = true;
+    rightLayer.visible = true;
+    cityLayer.visible = true;
+
+    // Update swipe widget as necessary
+    updateSwipeWidget(leftLayer, rightLayer);
+}
+
+
+</script>
+
+
+
+</head>
+<body>
+    <div class="container">
+      <div id="viewDiv" class="map">
+        <!-- Floating panel for layer controls -->
+        <div class="floating-panel">
+            <select id="leftLayerSelect">
+                <option value="layer75">1975</option>
+                <option value="layer80">1980</option>
+                <option value="layer85">1985</option>
+                <option value="layer90">1990</option>
+                <option value="layer95">1995</option>
+                <option value="layer00">2000</option>
+                <option value="layer05">2005</option>
+                <option value="layer10">2010</option>
+                <option value="layer15">2015</option>
+                <option value="layer20">2020</option>
+            </select>
+            <select id="rightLayerSelect">
+                <option value="layer75">1975</option>
+                <option value="layer80">1980</option>
+                <option value="layer85">1985</option>
+                <option value="layer90">1990</option>
+                <option value="layer95">1995</option>
+                <option value="layer00">2000</option>
+                <option value="layer05">2005</option>
+                <option value="layer10">2010</option>
+                <option value="layer15">2015</option>
+                <option value="layer20">2020</option>
+            </select>
+            <button onclick="setupSwipe()">Compare</button>
+        </div>
+    </div>    
+        <div class="header">
+            <h1>Urban Heat Explorer</h1>
+            <nav>
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="uhi.html">About UHI</a></li>
+                <!-- Dropdown for cities in menu -->
+                <li class="dropdown">
+                  <a href="#">Research Triangle</a>
+                  <ul class="dropdown-content">
+                    <li><a href="raleightime.html">Timeline</a></li>
+                    <li><a href="raleighswipe.html">Compare</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Austin</a>
+                  <ul class="dropdown-content">
+                    <li><a href="austintime.html">Timeline</a></li>
+                    <li><a href="austinswipe.html">Compare</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Richmond</a>
+                  <ul class="dropdown-content">
+                    <li><a href="richmondtime.html">Timeline</a></li>
+                    <li><a href="richmondswipe.html">Compare</a></li>
+                  </ul>
+                </li>
+                <li><a href="summary.html">Summary</a></li>
+              </ul>
+            </nav>
+        </div>
+        <div class="graph">
+          <canvas id="temperatureChart"></canvas>
+        </div>
+        <div class="blurb">
+          <div class="blurb-content">
+            <h2> <button id="infoButton" class="info-button">i</button>Exploring Urban Heat in Greater Austin</h2>
+            <p>Discover the impact of urban development on heat trends in Greater Austin from 1975 to 2020. This interactive tool allows you to visualize the increase in urban heat islands as the city has expanded over the years.</p>
+            <p><strong>How to Use:</strong> Click 'Timeline' to explore changes year-by-year with a time slider, or select 'Compare' to compare two specific years side-by-side.</p>
+            <div class="view-toggle">
+              <button id="timeViewButton">Timeline</button>
+              <button id="swipeViewButton">Compare</button>
+            <!--<button id="timeLapseButton">Timelapse</button> -->
+            </div>
+        </div>
+          <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Welcome to Greater Austin!</h2>
+                  <p>Greater Austin, commonly referred to as the Austin metropolitan area, is a vibrant hub of technology, music, and educational excellence in Texas. It includes the city of Austin, known as the "Live Music Capital of the World," and is home to a number of leading universities and tech companies.</p>
+                  <h3>Counties Comprising Greater Austin:</h3>
+                  <ul>
+                    <li><strong>Travis County:</strong> The core of the metro area, containing Austin, the state capital, known for its eclectic live-music scene centered around country, blues, and rock.</li>
+                    <li><strong>Williamson County:</strong> North of Austin, known for its high-tech employment hub and fast-growing cities like Round Rock and Cedar Park.</li>
+                    <li><strong>Hays County:</strong> To the south, it includes charming towns like San Marcos, offering a blend of college life and natural beauty.</li>
+                    <li><strong>Bastrop County:</strong> Features historic small towns and scenic state parks, adding to the region's natural charm.</li>
+                    <li><strong>Caldwell County:</strong> Known for its barbecue and quiet towns, contributing to the cultural diversity of the metro area.</li>
+                    <li><strong>Burnet County:</strong> Located to the northwest of Austin, Burnet County is known for its beautiful landscapes and lakes, serving as a gateway to the Texas Hill Country.</li>
+                  </ul>
+                  <p>Greater Austin is celebrated for its business-friendly environment, fostering innovation and entrepreneurship. The region has become a major tech hub, drawing comparisons to Silicon Valley, and is supported by the presence of the University of Texas and numerous other institutions of higher education. Located just south of the Killeen and Fort Hood area, this region benefits from its proximity to military and defense-related activities, adding to its strategic importance. The area provides a high quality of life with its mix of urban and rural areas, rich cultural experiences, and vibrant community life, making it a dynamic and thriving environment.</p>
+                  </div>
+  </div>
+</div>
+</div>
+</div>
+    
+</script><script>
+</script></body>
+<script>
+  //the following lines of code will create and update the bar chart in the graph grid
+  document.addEventListener('DOMContentLoaded', function () {
+    Chart.defaults.font.family = 'DM Sans'; // Default font for all charts
+    var ctx = document.getElementById('temperatureChart').getContext('2d');
+    var temperatureChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Lowest Mean Temp (°F)', 'Overall Mean Temp (°F)', 'Highest Mean Temp (°F)'],
+            datasets: [{
+                    label: 'Year 1',
+                    backgroundColor: '#618985',
+                    data: []
+                },
+                {
+                    label: 'Year 2',
+                    backgroundColor: '#96BBBB',
+                    data: []
+                }
+            ]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    
+                }
+            },
+            responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Monthly Average Temperatures for July', 
+                font: {
+                    size: 20
+                }
+            },
+            legend: {
+                position: 'top'
+            }
+        }
+    }
+});
+
+    // data for graph
+    var yearlyData = [
+        { year: 1975, min: 79.31, mean: 81.27, max: 82.28 },
+        { year: 1980, min: 85.07, mean: 86.56, max: 87.49 },
+        { year: 1985, min: 80.42, mean: 82.35, max: 83.29 },
+        { year: 1990, min: 78.75, mean: 81.56, max: 83.37 },
+        { year: 1995, min: 81.54, mean: 83.98, max: 85.09 },
+        { year: 2000, min: 83.81, mean: 85.35, max: 86.58 },
+        { year: 2005, min: 82.70, mean: 83.86, max: 84.77 },
+        { year: 2010, min: 81.58, mean: 82.98, max: 84.71 },
+        { year: 2015, min: 81.56, mean: 83.45, max: 85.19 },
+        { year: 2020, min: 83.97, mean: 86.07, max: 88.43 }
+    ];
+
+    function getFullYear(abbreviatedYear) {
+        abbreviatedYear = abbreviatedYear.substring(5); 
+        var year = parseInt(abbreviatedYear, 10);
+        return year <= 20 ? 2000 + year : 1900 + year;
+    }
+
+    function updateChartData(leftYear, rightYear) {
+        leftYear = getFullYear(leftYear);
+        rightYear = getFullYear(rightYear);
+
+        var year1Data = yearlyData.find(y => y.year === leftYear);
+        var year2Data = yearlyData.find(y => y.year === rightYear);
+
+        if (!year1Data || !year2Data) {
+            console.error('Data for selected years not found:', leftYear, rightYear);
+            return;
+        }
+
+        temperatureChart.data.datasets[0].data = [year1Data.min, year1Data.mean, year1Data.max];
+        temperatureChart.data.datasets[0].label = 'Year ' + leftYear;
+        temperatureChart.data.datasets[1].data = [year2Data.min, year2Data.mean, year2Data.max];
+        temperatureChart.data.datasets[1].label = 'Year ' + rightYear;
+        temperatureChart.update();
+    }
+
+    //update the graph with the selected years in the swipe widget
+    document.getElementById('leftLayerSelect').addEventListener('change', function () {
+        updateChartData(this.value, document.getElementById('rightLayerSelect').value);
+    });
+
+    document.getElementById('rightLayerSelect').addEventListener('change', function () {
+        updateChartData(document.getElementById('leftLayerSelect').value, this.value);
+    });
+
+    // Initialize with default years upon loading
+    updateChartData(document.getElementById('leftLayerSelect').value,
+        document.getElementById('rightLayerSelect').value);
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  // Handle the 'Timeline' button click
+  document.getElementById('timeViewButton').addEventListener('click', function() {
+    window.location.href = 'austintime.html';
+  });
+
+  // Handle the 'Compare' button click
+  document.getElementById('swipeViewButton').addEventListener('click', function() {
+    window.location.href = 'austinswipe.html';
+  });
+
+  //timelapse section can go here
+  // document.getElementById('timeLapseButton').addEventListener('click', function() {
+  //   window.location.href = 'timelapse.html'; // Update with the actual file name
+  // });
+
+});
+
+//the following lines of code will open and close the popup window
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById("myModal");
+    var btn = document.getElementById("infoButton");
+    var span = document.getElementsByClassName("close")[0];
+
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+});
+  </script>
+</html>

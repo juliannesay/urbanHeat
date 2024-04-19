@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+    <meta content="initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport"/>
+    <title>Urban Heat Explorer</title>
+    <link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..1000&family=Madimi+One&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      /* Base styles */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: 'DM Sans', sans-serif;
+        background: #F2FDFF; 
+        color: #101935; 
+      }
+
+      .container {
+  display: grid; 
+  grid-template-columns: 100%; 
+  grid-template-rows: 10% auto min-content; 
+  height: 100vh; 
+  gap: 0% 0px; 
+  grid-template-areas: 
+    "header"
+    "welcome-banner"
+    "homepage";
+      } 
+
+      /* Header styling with gradient */
+      .header {
+        grid-area: header;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        background: linear-gradient(to right, #618985, #96BBBB);
+        color: #edf1f7; 
+      }
+
+      .header h1 {
+        font-family: 'Madimi One', sans-serif;
+        font-size: 30px;
+        color: #edf1f7;
+        text-shadow: 2px 2px 4px #101935;
+      }
+
+
+      .header nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        gap: 20px;
+      }
+
+      .header nav ul li a {
+        text-decoration: none;
+        font-size: 18px;
+        color: #edf1f7; 
+      }
+
+      .header nav ul li a:hover {
+        background-color: #9AD4D6; 
+        border-radius: 5px; 
+        padding: 5px 10px; 
+      }
+
+      .button {
+        margin: 0 5px;
+        padding: 10px 20px;
+        background-color: #16302B; 
+        color: #edf1f7; 
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        background-color: #363732;
+      }
+
+      /* Hide the dropdown content by default */
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #16302B;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+      }
+
+      /* Style for the dropdown items */
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+
+      /* Show the dropdown content on hover */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* Hide the dropdown content when not hovering over the dropdown */
+      .dropdown:not(:hover) .dropdown-content {
+        display: none;
+      }
+
+      .homepage {
+        grid-area: homepage;
+        display: flex;
+        justify-content: center; 
+        align-items: center;
+        padding: 20px;
+        overflow-x: hidden;
+        background: linear-gradient(to right, #618985, #96BBBB);
+        color: #edf1f7;
+      }
+
+      .splash-button {
+        display: flex;
+        justify-content: center;
+        align-items: flex-end;
+        background-size: cover;
+        background-position: center;
+        width: calc(20% - 20px); 
+        height: 300px; 
+        margin: 10px;
+        position: relative;
+      }
+
+      .splash-button a {
+        width: 100%;
+        text-align: center;
+        background-color: rgba(22, 48, 43, 0.7);
+        color: #edf1f7;
+        padding: 15px 0; 
+        position: absolute;
+        bottom: 0;
+        text-decoration: none;
+        font-size: 18px;
+        border: none;
+        border-radius: 0 0 5px 5px;
+      }
+
+      .splash-button a:hover {
+        background-color: rgba(54, 55, 50, 0.7);
+      }
+
+      .welcome-banner {
+        text-align: center; 
+        padding: 40px 20px; 
+        background-color: #96BBBB; 
+        color: #edf1f7;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; 
+        align-items: center;
+        grid-area: welcome-banner;
+      }
+
+      .welcome-banner h2 {
+        font-size: 48px; 
+        margin: 0 0 20px 0; 
+        font-family: 'Madimi One', sans-serif;
+        text-shadow: 2px 2px 4px #101935;
+        line-height: 1.2; 
+      }
+
+      .welcome-banner p {
+        font-size: 24px; 
+        margin: 0;
+        font-family: 'DM Sans', sans-serif;
+      }
+      </style>      
+
+<!--importing thr css and libraries for esri.js-->
+<link href="https://js.arcgis.com/4.27/esri/themes/light/main.css" rel="stylesheet"/>
+<script src="https://js.arcgis.com/4.27/">
+</script>
+<!--loading the modules-->
+
+</script>
+<script>
+
+  </script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Urban Heat Explorer</h1>
+            <nav>
+              <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="uhi.html">About UHI</a></li>
+                <!-- Dropdown for cities -->
+                <li class="dropdown">
+                  <a href="#">Research Triangle</a>
+                  <ul class="dropdown-content">
+                    <li><a href="raleightime.html">Time View</a></li>
+                    <li><a href="raleighswipe.html">Swipe View</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Austin</a>
+                  <ul class="dropdown-content">
+                    <li><a href="austintime.html">Time View</a></li>
+                    <li><a href="austinswipe.html">Swipe View</a></li>
+                  </ul>
+                </li>
+                <li class="dropdown">
+                  <a href="#">Greater Richmond</a>
+                  <ul class="dropdown-content">
+                    <li><a href="richmondtime.html">Time View</a></li>
+                    <li><a href="richmondswipe.html">Swipe View</a></li>
+                  </ul>
+                </li>
+                <li><a href="methodology.html">Methodology</a></li>
+              </ul>
+            </nav>
+          </div>
+          <div class="welcome-banner">
+            <h2>Welcome to the Urban Heat Explorer</h2>
+            <p>Explore the impact of development on urban heat in different  growing cities.</p>
+        </div>
+          <div class="homepage">
+            <!-- About UHI -->
+            <div class="splash-button" style="background-image: url('images/about-uhi.jpg');">
+                <a href="uhi.html">About UHI</a>
+            </div>
+          
+            <!-- Research Triangle -->
+            <div class="splash-button" style="background-image: url('images/research-triangle.jpg');">
+                <a href="raleightime.html">Research Triangle</a>
+            </div>
+          
+            <!-- Greater Austin -->
+            <div class="splash-button" style="background-image: url('images/greater-austin.jpg');">
+                <a href="austintime.html">Greater Austin</a>
+            </div>
+          
+            <!-- Greater Richmond -->
+            <div class="splash-button" style="background-image: url('images/greater-richmond.jpg');">
+                <a href="richmondtime.html">Greater Richmond</a>
+            </div>
+          
+            <!-- Methodology -->
+            <div class="splash-button" style="background-image: url('images/methodology.jpg');">
+                <a href="methodology.html">Methodology</a>
+            </div>
+          </div>
+          
+          </div>
+         
+        
+</script><script>
+</script></body>
+<script>
+  </script>
+  
+  
+</html>
